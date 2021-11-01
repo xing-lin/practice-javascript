@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>捕获与冒泡</title>
+    <style>
+      #outerContainer {
+        width: 100px;
+        height: 100px;
+        background-color: blue;
+      }
+
+      #innerContainer {
+        width: 50px;
+        height: 50px;
+        background-color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="outerContainer">
+      <div id="innerContainer"></div>
+    </div>
+    <script>
+      const outerContainer = document.getElementById("outerContainer");
+      const innerContainer = document.getElementById("innerContainer");
+
+      innerContainer.addEventListener("click", function (event) {
+        console.log("innerContainer click");
+        console.log(this === innerContainer);
+        console.log(event.target === innerContainer);
+      });
+      // addEventListener默认事件冒泡，设置为true将采用事件捕获
+      outerContainer.addEventListener(
+        "click",
+        function (event) {
+          console.log("outerContainer click");
+          console.log(this === outerContainer);
+          console.log(event.target === outerContainer);
+        },
+        true
+      );
+      document.addEventListener("click", () => {
+        console.log("document click");
+      });
+    </script>
+  </body>
+</html>
