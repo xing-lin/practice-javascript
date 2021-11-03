@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>适配器模式</title>
+  </head>
+  <body>
+    <script>
+      const getGuangdongCity = function () {
+        return [
+          { name: "shenzhen", id: 11 },
+          { name: "guangzhou", id: 12 },
+        ];
+      };
+
+      const render = function (fn) {
+        console.log("开始渲染广州省地图");
+        document.write(JSON.stringify(fn()));
+      };
+
+      const guangdongCity = {
+        shenzhen: 11,
+        guangzhou: 12,
+        zhuhai: 13,
+      };
+
+      const addressAdapter = function (oldAddressfn) {
+        const address = {},
+          oldAddress = oldAddressfn();
+
+        for (let i = 0, c; (c = oldAddress[i++]); ) {
+          //   console.log(i, c);
+          address[c.name] = c.id;
+        }
+        return function () {
+          return address;
+        };
+      };
+
+      //   render(getGuangdongCity);
+      render(addressAdapter(getGuangdongCity));
+    </script>
+  </body>
+</html>
