@@ -58,6 +58,14 @@
 // }
 
 // var当中没有块级作用域
+
+// {
+//   let a = 1;
+//   var b = 2;
+// }
+// console.log(a);
+// console.log(b);
+
 // for (var i = 0; i < 3; i++) {
 //   console.log(i);
 // }
@@ -919,74 +927,74 @@ JSON.stringify  深拷贝
 //    resolve(promise1);
 // });
 
-class Promise {
-  constructor(fn) {
-    this.status = "pending";
-    this.value = undefined;
-    this.fulfilledList = [];
-    this.rejectedList = [];
-    fn(this.triggerResolve.bind(this), this.triggerReject.bind(this));
-  }
-  triggerResolve(val) {
-    setTimeout(() => {
-      if (this.status !== "pending") {
-        return;
-      }
-      if (val instanceof Promise) {
-        val.then(
-          (value) => {},
-          (reason) => {}
-        );
-      } else {
-        // resolve传入的是普通值
-        this.status = "fulfilled";
-        this.value = val;
-        this.triggerFulfilled(val);
-      }
-    }, 0);
-  }
-  triggerReject() {}
-  triggerFulfilled(val) {
-    this.fulfilledList.forEach((item) => item(val));
-    this.fulfilledList = [];
-  }
-  // 实例方法
-  then(onFulfilled, onRejected) {
-    const { value, status } = this;
-    return new Promise((onNextFulfilled, onNextRejected) => {
-      function onFinalFulfilled(val) {
-        if (typeof onFulfilled !== "function") {
-          onNextFulfilled(val);
-        } else {
-          const res = onFulfilled(val);
-          if (res instanceof Promise) {
-            res.then(onNextFulfilled, onNextRejected);
-          } else {
-            onNextFulfilled(res);
-          }
-        }
-      }
+// class Promise {
+//   constructor(fn) {
+//     this.status = "pending";
+//     this.value = undefined;
+//     this.fulfilledList = [];
+//     this.rejectedList = [];
+//     fn(this.triggerResolve.bind(this), this.triggerReject.bind(this));
+//   }
+//   triggerResolve(val) {
+//     setTimeout(() => {
+//       if (this.status !== "pending") {
+//         return;
+//       }
+//       if (val instanceof Promise) {
+//         val.then(
+//           (value) => {},
+//           (reason) => {}
+//         );
+//       } else {
+//         // resolve传入的是普通值
+//         this.status = "fulfilled";
+//         this.value = val;
+//         this.triggerFulfilled(val);
+//       }
+//     }, 0);
+//   }
+//   triggerReject() {}
+//   triggerFulfilled(val) {
+//     this.fulfilledList.forEach((item) => item(val));
+//     this.fulfilledList = [];
+//   }
+//   // 实例方法
+//   then(onFulfilled, onRejected) {
+//     const { value, status } = this;
+//     return new Promise((onNextFulfilled, onNextRejected) => {
+//       function onFinalFulfilled(val) {
+//         if (typeof onFulfilled !== "function") {
+//           onNextFulfilled(val);
+//         } else {
+//           const res = onFulfilled(val);
+//           if (res instanceof Promise) {
+//             res.then(onNextFulfilled, onNextRejected);
+//           } else {
+//             onNextFulfilled(res);
+//           }
+//         }
+//       }
 
-      switch (status) {
-        case "pending":
-          this.fulfilledList.push(onFinalFulfilled);
-          this.rejectedList.push(onRejected);
-          break;
-      }
-    });
-  }
-  catch() {}
-  // 静态方法
-  static resolve(value) {
-    if (value instanceof Promise) {
-      return value;
-    }
-    return new Promise((resolve) => resolve(value));
-  }
-  static reject() {}
-  static all() {}
-  static race() {}
-}
+//       switch (status) {
+//         case "pending":
+//           this.fulfilledList.push(onFinalFulfilled);
+//           this.rejectedList.push(onRejected);
+//           break;
+//       }
+//     });
+//   }
+//   catch() {}
+//   // 静态方法
+//   static resolve(value) {
+//     if (value instanceof Promise) {
+//       return value;
+//     }
+//     return new Promise((resolve) => resolve(value));
+//   }
+//   static reject() {}
+//   static all() {}
+//   static race() {}
+// }
 
 /**
  * Module
