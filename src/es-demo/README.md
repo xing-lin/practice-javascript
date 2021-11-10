@@ -162,10 +162,213 @@ const f = constantize({
     b: 1,
   },
 });
-f.a.b = 123; 
+f.a.b = 123;
 console.log(f); //报错
 
 
 ```
 
-### 解构
+### 解构赋值（Destructuring）
+
+1. 基本用法
+
+```js
+// 1.1 模式匹配：只要等号两边的模式相同，左边的变量就会被赋予对应的值
+
+const [foo, [[bar], baz]] = [1, [[2], 3]];
+console.log(foo, bar, baz); // 1,2,3
+
+const [, , third] = ["foo", "bar", "baz"];
+console.log(third); // baz
+
+const [x, , y] = [1, 2, 3];
+console.log(x, y); // 1,3
+
+const [head, ...tail] = [1, 2, 3, 4];
+console.log(head, tail); // 1, [2, 3, 4]
+
+const [x, y, ...z] = ["a"];
+console.log(x, y, z); // x -> a, y -> undefined, z -> []
+
+// 1.2 如果解构不成功，变量值为undefined
+const [foo] = [];
+const [bar, baz] = [1];
+console.log(foo, baz); // undefined  undefined
+
+// 1.3 不完全解构
+const [x, y] = [1, 2, 3];
+console.log(x, y); // 1,2
+
+const [a, [b], c] = [1, [2, 3], 4];
+console.log(a, b, c); // 1, 2, 4
+
+// 1.4 对于数组解构来说，等号的右边如果不是可迭代的结构，那么会报错。（在JavaScript中，Object是不可迭代的，除非实现了迭代协议。也就是说不能使用for...of来迭代对象的属性）
+// 报错
+const [foo] = 1;
+const [foo] = false;
+const [foo] = NaN;
+const [foo] = undefined;
+const [foo] = null;
+const [foo] = {};
+
+// 1.4.1 右边可迭代结构：数组
+// 字符串
+const [x, y, z] = "abc";
+console.log(x, y, z); // a, b, c
+// Set结构
+const [x, y, z] = new Set(["a", "b", "c"]);
+console.log(x, y, z); // a, b, c
+
+// Generator 函数
+// 斐波那契数列
+/**
+ * 0  [1, 1]
+ * 1  [1, 2]
+ * 1  [2, 3]
+ * 2  [3, 5]
+ * 3  [5, 8]
+ * 5  [8, 13]
+ */
+function* fibs() {
+  let a = 0;
+  let b = 1;
+  while (true) {
+    yield a;
+    [a, b] = [b, a + b];
+  }
+}
+const [first, second, third, fourth, fifth, sixth] = fibs();
+console.log(first, second, third, fourth, fifth, sixth); // 0 1 1 2 3 5
+
+const iterator = fibs();
+console.log(iterator.next()); // 0
+console.log(iterator.next()); // 1
+console.log(iterator.next()); // 1
+console.log(iterator.next()); // 2
+
+// 1.4.2 但是对于数值和布尔值的解构,会先转为对象,可进行对象的解构
+const { toString, toFixed } = NaN;
+console.log(toFixed === Number.prototype.toFixed); // true
+console.log(toString === Number.prototype.toString); // true
+
+const { toString } = true;
+console.log(toString === Boolean.prototype.toString); // true
+
+// 解构赋值的规则是,只要等号右边的值不是对象, 就先将其转为对象.由于 undefined和null无法转成对象,所以对它们进行解构赋值,都会报错
+const {} = undefined;
+const {} = null;
+```
+
+2. 默认值
+
+```js
+// 2.1 解构赋值允许指定默认值
+const [foo = true] = [];
+console.log(foo); // true
+
+const [x, y = "b"] = ["a"];
+const [x, y = "b"] = ["a", undefined];
+console.log(x, y); // a,b
+
+// 2.2 解构赋值内部使用严格相等运算符===，判断一个位置是否有值
+const [x = 1] = [undefined];
+console.log(x); // 1
+
+const [x = 1] = [null];
+console.log(x); // null
+
+// 2.3 如果默认值是一个表达式，那么这个表达式是惰性求值的，也就是只有在用到的时候，才会求值。
+function f() {
+  console.log("aaa");
+  return "aaa";
+}
+const [x = f()] = [1];
+console.log(x); // 1，不会输出打印aaa
+
+// 2.4 默认值可以引用解构赋值的其他变量，但该变量必须已经声明。
+const [x = y, y = 1] = []; //报错，因为x用到默认值y时，y还没有声明。
+```
+
+3. 对象的解构赋值
+
+```js
+// 3.1 对象解构，属性没有次序，变量必须与属性同名，才能取到正确的值。
+const { bar, foo, baz } = { foo: "aaa", bar: "bbb" };
+console.log(foo, bar, baz); // aaa,bbb,undefined
+
+// 3.2 如果变量名与属性名不一致，必须写成下面这样
+const { foo: baz } = { foo: "aaa", bar: "bbb" };
+console.log(baz); // aaa
+console.log(foo); // 报错，foo is not defined
+
+// 3.2.1 这实际上说明，对象的解构赋值是下面形式的简写。
+// 也就是说，对象的解构赋值的内部机制，是先找到同名属性foo，然后右边foo对应的值再赋给左边foo对应的变量。
+// 真正被赋值的是后者，而不是前者
+const { foo: foo, bar: bar } = { foo: "aaa", bar: "bbb" };
+
+// 3.3 采用这种写法时，变量的声明和赋值是一体的。对于let和const来说，变量不能重新声明，所以一旦赋值的变量以前声明过，就会报错。
+
+let foo;
+let { foo } = { foo: 1 };
+console.log(foo); //报错，重复声明
+let baz;
+let { bar: baz } = { bar: 1 };
+console.log(baz); //报错，重复声明
+
+// 如果去掉let，那赋值操作必须加上圆括号。因为解析器会将起首的大括号，理解成一个代码块，而不是赋值语句。
+let foo;
+({ foo } = { foo: 1 });
+console.log(foo); // 1
+let baz;
+({ bar: baz } = { bar: 1 });
+console.log(baz); // 1
+```
+
+### 字符串的扩展
+
+1. 字符的 Unicode 表示法
+
+```js
+// 1. JavaScript采用四字节的UTF-16编码，用\uxxxx形式表示一个字符，单个字符的范围为 \u0000 ~ \uFFFF，超出这个范围的字符，用两个双字节的形式表达
+console.log("\uD842\uDFB7"); // 𠮷
+
+// 1.1 超过0xFFFF的数值，JavaScript会理解为 \u20BB+7
+console.log("\u20BB7"); // ₻7
+
+// ES6改进，只要将码点放入大括号，就能正常解读该字符。
+console.log("\u{20BB7}"); //  𠮷
+console.log("\u{20BB7}" === "\uD842\uDFB7"); // true
+```
+
+2. codePointAt()
+
+```js
+// 汉字𠮷的码点是0x20BB7，UTF-16编码为0xD842 0xDFB7（十进制为55362 57271），需要4个字节储存。
+// 对于这种4个字节的字符，JavaScript不能正确处理，字符串长度会误判为2，而且charAt方法无法读取整个字符，charCodeAt方法只能分别返回前两个字节和后两个字节的值。
+const s = "𠮷";
+console.log(s.length); // 2
+console.log(s.charAt(0)); // �
+console.log(s.charAt(1)); // �
+console.log(s.charCodeAt(0)); // 55362
+console.log(s.charCodeAt(1)); // 57271
+console.log(s.charCodeAt(0).toString(16)); // d842
+console.log(s.charCodeAt(1).toString(16)); // dfb7
+console.log("\ud842\udfb7"); // 𠮷
+
+// ES6
+console.log(s.codePointAt(0).toString(16)); // 20bb7
+```
+
+3. String.fromCodePoint()
+
+```js
+// String.fromCharCode不能识别大于0xFFFF的码点，所以0x20BB7就发生了溢出，最高位2被舍弃了，最后返回码点U+0BB7对应的字符
+console.log(String.fromCharCode(0x20bb7)); // ஷ
+// String.fromCodePoint，弥补了String.fromCharCode方法的不足。在作用上，正好与codePointAt方法相反
+console.log(String.fromCodePoint(0x20bb7)); // 𠮷
+```
+4.4 字符串的遍历器接口
+```js
+const s = '𠮷𠮷𠮷'
+// for(let )
+```
