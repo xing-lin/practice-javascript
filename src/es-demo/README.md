@@ -367,8 +367,402 @@ console.log(String.fromCharCode(0x20bb7)); // ஷ
 // String.fromCodePoint，弥补了String.fromCharCode方法的不足。在作用上，正好与codePointAt方法相反
 console.log(String.fromCodePoint(0x20bb7)); // 𠮷
 ```
-4.4 字符串的遍历器接口
+
+4. 增加了字符串的遍历器接口
+
 ```js
-const s = '𠮷𠮷𠮷'
-// for(let )
+// for...of 可以识别大于0xFFFF的码点，传统的for循环无法识别这样的码点。
+const s = "𠮷";
+for (const value of s) {
+  console.log(value); // 𠮷
+}
+for (let i = 0; i < s.length; i++) {
+  console.log(s[i]); // 不能识别，乱码�
+}
 ```
+
+5. normalize()
+
+```js
+// 许多欧洲语言有语调符号和重音符号。为了表示它们，Unicode提供了两种方法。一种是直接提供带重音符号，另一种是提供合成符号，即原字符与重音符号的合成，两个字符合成一个字符。
+
+console.log("\u01D1"); // 重音符号 Ǒ
+console.log("\u004F\u030C"); // O + ˇ  = Ǒ
+
+// 这两种方法，在视觉和语义上都等价，但是JavaScript不能识别。
+console.log("\u01D1" === "\u004F\u030C"); // false
+console.log("\u01D1".length); // 1
+console.log("\u004F\u030C".length); // 2
+
+// ES6提供字符串实例的normalize()方法，用来将字符的不同表示方法统一为同样的形式，这称为Unicode正规化。normalize方法不能识别中文。
+console.log("\u01D1".normalize() === "\u004F\u030C".normalize()); // true
+console.log("\u01D1".normalize().length === "\u004F\u030C".normalize().length); // true length都为1
+```
+
+6. includes(), startsWith(), endsWith()
+
+```js
+// includes()：返回布尔值，表示是否找到了参数字符串
+// startsWith()：返回布尔值，表示参数字符串是否在源字符串的头部
+// endsWith()：返回布尔值，表示参数字符串是否在源字符串的尾部。
+
+const s = "Hello World";
+
+console.log(s.includes("o")); // true
+console.log(s.startsWith("Hello")); // true
+console.log(s.endsWith("!")); // true
+
+// 这三个方法都支持第二个参数，表示开始搜索的位置。使用第二个参数n时，endsWith的行为与其他两个方法有所不同。它针对前n个字符，而其他两个方法针对从第n个位置直到字符串结束。
+
+const s = "Hello World";
+
+console.log(s.includes("World", 6)); // true
+console.log(s.startsWith("world", 6)); // true
+console.log(s.endsWith("Hell", 4)); // true
+```
+
+7. repeat()：返回一个新的 字符串，表示将原字符串重复 n 次
+
+```js
+console.log("abc".repeat(2)); // abcabc
+console.log("abc".repeat(0) === ""); // true
+// 如果参数是小数，只保留整数部分
+console.log("abc".repeat(0.9) === ""); // true
+// 如果参数是负数或者Infinity，会报错，
+console.log("abc".repeat(-1)); //报错
+console.log("abc".repeat(Infinity)); //报错
+// 但是如果参数是0到-1之间的负数，取整以后等于-0，repeat视同为0
+console.log("abc".repeat(-0.9) === ""); // true
+// 参数NaN等同于0
+console.log("abc".repeat(NaN) === ""); // true
+// 如果参数类型不是number类型，会先将参数转换成number
+console.log("abc".repeat("aaaa") === ""); // true
+console.log("abc".repeat("3")); // abcabcabc
+```
+
+8. padStart(), padEnd()：ES7 推出了字符串补全长度的功能。如果某个字符串不够指定长度，会在头部或者尾部去补全。
+
+```js
+console.log("x".padStart(5, "a")); // aaaax
+console.log("x".padEnd(5, "a")); // xaaaa
+
+// 如果原字符串的长度，等于或大于指定的最小长度，则返回原字符串
+console.log("xxxxx".padStart(5, "a")); // xxxxx
+console.log("xxxxx".padEnd(5, "a")); // xxxxx
+
+// 如果用来补全的字符串与原字符串，两者的长度之和超过了指定的最小长度，则会截去超出位数的补全字符串
+console.log("x".padStart(3, "abcdefg")); // abx
+console.log("x".padEnd(3, "abcdefg")); // xab
+
+// 如果省略第二个参数，则会用空格补全长度
+console.log("x".padStart(3) === "  x"); // true
+console.log("x".padEnd(3) === "x  "); // true
+
+// 用途，格式化日期补0，就不用判断是否小于10
+```
+
+9. 模板字符串
+
+### Proxy
+
+```js
+// Proxy.revocable 方法返回一个对象，该对象的 proxy 属性是 Proxy 实
+// 例， revoke 属性是一个函数，可以取消 Proxy 实例。上面代码中，当执
+// 行 revoke 函数之后，再访问 Proxy 实例，就会抛出一个错误。
+// Proxy.revocable 的一个使用场景是，目标对象不允许直接访问，必须通过代理
+// 访问，一旦访问结束，就收回代理权，不允许再次访问。
+const handler = {
+  get() {
+    return "12";
+  },
+};
+
+const { proxy, revoke } = Proxy.revocable({ age: 11 }, handler);
+console.log(proxy.age); // 12
+
+revoke();
+
+console.log(proxy.age); // 报错
+```
+
+1. get(target, propKey, receiver)
+
+```js
+// get(target, propKey, receiver)：拦截对象属性的读取，比如 proxy.foo 和 proxy['foo']。
+
+const person = {
+  name: "张三",
+};
+
+const proxy = new Proxy(person, {
+  get(target, property) {
+    if (property in target) {
+      return target[property];
+    } else {
+      throw new ReferenceError("属性" + property + "不存在");
+    }
+  },
+});
+
+console.log(proxy.name);
+console.log(proxy.age);
+```
+
+2. set(target, propKey, value, receiver)
+
+```js
+// set(target, propKey, value, receiver)：拦截对象属性的设置。比如 proxy.foo = v 或 proxy['foo'] = v，返回一个布尔值。
+
+const person = new Proxy(
+  {},
+  {
+    set(target, property, value) {
+      if (property === "age") {
+        if (!Number.isInteger(value)) {
+          throw new TypeError("The age is not an integer");
+        }
+        if (value > 200) {
+          throw new RangeError("The age seems invalid");
+        }
+      }
+      return (target[property] = value);
+    },
+  }
+);
+
+person.age = 100;
+
+console.log(person);
+```
+
+3. has(target, propKey)
+
+```js
+// has(target, propKey)：拦截 propKey in proxy 的操作，返回一个布尔值。
+// has 方法用来拦截 hasProperty 操作，即判断对象是否有某个属性时，这个方法会生效。
+// 值得注意的是，has 方法不拦截 HasOwnProperty 操作，不拦截 for...in 操作
+// 隐藏私有属性
+const proxy = new Proxy(
+  { _prop: "foo", prop: "foo", 1: 2 },
+  {
+    has(target, property) {
+      if (property[0] === "_") {
+        return false;
+      }
+      return property in target;
+    },
+  }
+);
+
+console.log("_prop" in proxy); // false
+console.log(proxy.hasOwnProperty("_prop")); // true
+
+for (const key in proxy) {
+  console.log(key); // 1,_prop,prop
+}
+```
+
+4. deleteProperty(target, propKey)
+
+```js
+// deleteProperty(target, propKey)：拦截 delete proxy[propKey] 的操作，返回一个布尔值。
+
+const obj = {
+  name: "张三",
+  age: 11,
+  _gender: "boy",
+};
+
+const proxy = new Proxy(obj, {
+  deleteProperty(target, property) {
+    if (property.startsWith("_")) {
+      throw new Error("此属性不能删除");
+    }
+    Reflect.deleteProperty(target, property);
+    return true;
+  },
+});
+
+console.log(proxy); // {name: '张三', age: 11, _gender: 'boy'}
+delete proxy.name;
+console.log(proxy); // {age: 11, _gender: 'boy'}
+delete proxy._gender; //报错
+```
+
+5. ownKeys(target)
+
+```js
+// ownKeys(target)：拦截 Object.getOwnPropertyNames(proxy) 、 Object.getOwnPropertySymbols(proxy) 、 Object.keys(proxy) ，返回一个数组。
+// 该方法返回目标对象所有自身的属性的属性名，而 Object.keys() 的返回结果仅包括目标对象自身的可遍历属性。
+
+const target = {
+  a: 1,
+  b: 2,
+  c: 3,
+  [Symbol.for("secret")]: "4",
+};
+Object.defineProperty(target, "key", {
+  enumerable: false,
+  configurable: true,
+  writable: true,
+  value: "static",
+});
+const handler = {
+  ownKeys(target) {
+    return ["a", "d", Symbol.for("secret"), "key"];
+  },
+};
+const proxy = new Proxy(target, handler);
+
+console.log(Object.keys(proxy)); // ['a']
+```
+
+6. getOwnPropertyDescriptor(target, propKey)
+
+```js
+// getOwnPropertyDescriptor(target, propKey)：拦截Object.getOwnPropertyDescriptor(proxy, propKey)，返回属性的描述对象。
+const handler = {
+  getOwnPropertyDescriptor(target, key) {
+    if (key[0] === "_") {
+      return;
+    }
+    return Reflect.getOwnPropertyDescriptor(target, key);
+  },
+};
+var target = { _foo: "bar", baz: "tar" };
+var proxy = new Proxy(target, handler);
+Reflect.getOwnPropertyDescriptor(proxy, "wat"); // undefined
+Reflect.getOwnPropertyDescriptor(proxy, "_foo"); // undefined
+console.log(Reflect.getOwnPropertyDescriptor(proxy, "baz")); // {value: 'tar', writable: true, enumerable: true, configurable: true}
+```
+
+7. defineProperty(target, propKey, propDesc)
+
+```js
+// defineProperty(target, propKey, propDesc)：拦截 Object.defineProperty(proxy, propKey, propDesc)、Object.defineProperties(proxy, propDescs)，返回一个布尔值。
+const obj = {
+  name: "张三",
+  age: 11,
+};
+
+const proxy = new Proxy(obj, {
+  defineProperty(target, property, descriptor) {
+    console.log(target, property, descriptor);
+    return Reflect.defineProperty(target, property, descriptor);
+  },
+});
+
+Object.defineProperty(proxy, "gender", {
+  writable: false,
+  enumerable: false,
+  value: "boy",
+});
+
+console.log(proxy);
+```
+
+8. preventExtensions(target)
+
+```js
+// preventExtensions(target)：拦截Object.preventExtensions(proxy)，返回一个布尔值。
+const p = new Proxy(
+  {},
+  {
+    preventExtensions: function (target) {
+      return true;
+    },
+  }
+);
+Object.preventExtensions(p); // 报错
+```
+
+9. getPrototypeOf(target)
+
+```js
+// getPrototypeOf(target)：拦截获取对象原型 Object.getProtoypeOf(proxy)，返回一个对象。
+// 具体来说拦截以下操作
+// Object.prototype.__proto__
+// Object.prototype.isPrototypeOf()
+// Object.getPrototypeOf()
+// Reflect.getPrototypeOf()
+// instanceof
+
+const proto = {};
+const p = new Proxy(
+  {},
+  {
+    getPrototypeOf(target) {
+      return proto;
+    },
+  }
+);
+
+console.log(Object.getPrototypeOf(p) === proto); // true
+```
+
+10. isExtensible(target)
+
+```js
+// isExtensible(target)：拦截 Object.isExtensible(proxy)，返回一个布尔值。
+var p = new Proxy(
+  {},
+  {
+    isExtensible: function (target) {
+      console.log("called");
+      return true;
+    },
+  }
+);
+Object.isExtensible(p);
+```
+
+11. setProtoypeOf(target, proto)
+
+```js
+// setProtoypeOf(target, proto)：拦截Object.setPrototypeOf(proxy, proto)，返回一个布尔值。
+
+var handler = {
+  setPrototypeOf(target, proto) {
+    throw new Error("Changing the prototype is forbidden");
+  },
+};
+var proto = {};
+var target = function () {};
+var proxy = new Proxy(target, handler);
+Object.setPrototypeOf(proxy, proto);
+// Error: Changing the prototype is forbidden
+```
+
+12. 目标是函数，额外的操作：apply(target, object, args)
+
+```js
+// apply(target, object, args)：拦截 Proxy 实例作为函数调用的操作，比如 proxy(...args) 、 proxy.call(object,...args) 、 proxy.apply(...) 。
+const p = new Proxy(
+  function sum(x, y) {
+    return x + y;
+  },
+  {
+    apply() {
+      return Reflect.apply(...arguments) * 2;
+    },
+  }
+);
+
+console.log(p(1, 2)); // 6
+```
+
+13. construct(target, args)
+
+```js
+// construct(target, args)：拦截 Proxy 实例作为构造函数调用的操作，比如 new proxy(...args)。
+const p = new Proxy(function () {}, {
+  construct: function (target, args) {
+    return { value: args[0] * 10 };
+  },
+});
+
+console.log(new p(1));
+// construct 方法返回的必须是一个对象，否则会报错。
+```
+
+### Reflect
