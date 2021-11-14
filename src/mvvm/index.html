@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">
+      <p>{{test.color}}</p>
+      <p>{{msg}}</p>
+      <p v-html="tag"></p>
+      <p v-text="test.color"></p>
+      <input type="text" v-model="test.color" />
+      <button v-on:click="handleClick">click me</button>
+    </div>
+    <script src="./my-vue/Watch.js"></script>
+    <script src="./my-vue/Observer.js"></script>
+    <script src="./my-vue/Compile.js"></script>
+    <script src="./my-vue/index.js"></script>
+    <script>
+      const vm = new Vue({
+        el: "#app",
+        data: {
+          test: {
+            color: "red",
+          },
+          msg: "Hello World",
+          tag: "<h3 style='color: red'>Hello</h3>",
+        },
+        methods: {
+          handleClick() {
+            this.msg = "123";
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
