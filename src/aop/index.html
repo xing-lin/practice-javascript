@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <script type="text/javascript">
+      function voice() {
+        alert("救命啊！");
+      }
+      Aspects = function () {};
+      Aspects.prototype = {
+        before: function (target, method, advice) {
+          var original = target[method];
+          target[method] = function () {
+            advice();
+            original.apply(target, arguments);
+          };
+          return target;
+        },
+        after: function (target, method, advice) {
+          var original = target[method];
+          target[method] = function () {
+            original.apply(target, arguments);
+            advice();
+          };
+          return target;
+        },
+        around: function (target, method, advice) {
+          var original = target[method];
+          target[method] = function () {
+            advice();
+            original.apply(target, arguments);
+            advice();
+          };
+          return target;
+        },
+      };
+      window.onload = function () {
+        var bn = document.getElementById("bn");
+        var a = new Aspects();
+        a.after(bn, "onclick", function () {
+          alert("HELP！HELP！");
+        });
+      };
+    </script>
+    <title>非法修改button的onclick事件</title>
+  </head>
+  <body>
+    <input onclick="voice()" type="button" id="bn" value="动我就叫人来" />
+  </body>
+</html>
