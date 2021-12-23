@@ -8,6 +8,48 @@
   </head>
   <body>
     <script>
+      // const tap = (value) => (fn) => typeof fn === "function" && fn(value);
+      // const forEach = (array, fn) => {
+      //   for (let i = 0; i < array.length; i++) {
+      //     fn(array[i]);
+      //   }
+      // };
+      // console.log(tap(2)((value) => value + 2));
+      // forEach([1, 2, 3], (number) => {
+      //   console.log(number);
+      // });
+
+      // forEach([1, 2, 3, 4], (number) => {
+      //   tap(number)((value) => {
+      //     console.log(value);
+      //   });
+      // });
+
+      // const once = (fn) => {
+      //   let done = true;
+      //   return (...args) => {
+      //     if (done) {
+      //       fn.apply(this, args);
+      //       done = false;
+      //     } else {
+      //       console.log("执行过了");
+      //     }
+      //   };
+      // };
+
+      // function foo() {
+      //   console.log("Hello");
+      // }
+      // const foo1 = once(foo);
+      // foo();
+      // foo();
+      // foo();
+      // foo();
+      // foo();
+      // foo1();
+      // foo1();
+      // foo1();
+      // foo1();
       //   const unary = (fn) => {
       //     debugger;
       //     return fn.length === 1
@@ -19,6 +61,11 @@
       //   };
 
       //   console.log(["1", "2", "3"].map(unary(parseInt)));
+      var unary = function (fn) {
+        return fn.length === 1 ? fn : (a) => fn(a);
+      };
+      const arr = ["1", "2", "3"].map(unary(parseInt));
+      console.log("arr->", arr);
     </script>
   </body>
 </html>

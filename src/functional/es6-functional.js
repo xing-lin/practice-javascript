@@ -97,6 +97,40 @@ const some = (arr, fn) => {
 //   return a[property] < b[property] ? -1 : a[property] > b[property] ? 1 : 0;
 // }
 
+const map = (arr, fn) => {
+  const result = [];
+  //   forEach(arr, (item, index) => {
+  //     result.push(fn(item, index));
+  //   });
+  for (const value of arr) {
+    result.push(fn(value));
+  }
+  return result;
+};
+
+const filter = (arr, fn) => {
+  const result = [];
+
+  for (const value of arr) {
+    fn(value) && result.push(value);
+  }
+  return result;
+};
+
+// const filterArr = filter([1, 2, 3], (item) => item > 1);
+
+// console.log(filterArr);
+
+const concatAll = (array) => {
+  let result = [];
+  for (const value of array) {
+    [].push.apply(result, value);
+  }
+  return result;
+};
+
+console.log(concatAll([[1, 2, 3, 5]]));
+
 module.exports = {
   forEach,
 };
