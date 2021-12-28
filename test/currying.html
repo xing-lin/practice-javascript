@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      const array = ["js", "number1"];
+      const curry = (binaryFn) => (firstArg) => (secondArg) =>
+        binaryFn(firstArg, secondArg);
+
+      const match = curry(function (expr, str) {
+        // console.log("match-->", expr, str);
+        return str.match(expr);
+      });
+
+      //   const hasNumber = match(/[0-9]+/);
+
+      //   const filter = curry(function (f, ary) {
+      //     console.log("filter-->", f, ary);
+      //     return ary.filter(f);
+      //   });
+
+      //   const findNumbersInArray = filter(hasNumber);
+
+      //   console.log(findNumbersInArray(array));
+
+    //   function a(f, ary) {
+    //     // console.log("filter-->", f, ary);
+    //     return ary.filter(f);
+    //   }
+      console.log(["js", "number1"].filter(match(/[0-9]+/)));
+
+    </script>
+  </body>
+</html>
