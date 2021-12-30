@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      //   const map = (arr, fn) => {
+      //     const result = [];
+      //     for (const value of arr) {
+      //       result.push(fn(value));
+      //     }
+      //     return result;
+      //   };
+
+      //   const filter = (arr, fn) => {
+      //     const result = [];
+      //     for (const value of arr) {
+      //       fn(value) && result.push(value);
+      //     }
+      //     return result;
+      //   };
+      //   const compose = (a, b) => (c) => a(b(c));
+      //   const partial = function (fn, ...partialArgs) {
+      //     const result = [...partialArgs];
+      //     return function (...fullArguments) {
+      //       for (
+      //         let i = 0, arg = 0;
+      //         i < partialArgs.length && arg < fullArguments.length;
+      //         i++, arg++
+      //       ) {
+      //         if (partialArgs[i] === undefined) {
+      //           result[i] = fullArguments[arg];
+      //         }
+      //       }
+      //       return fn.apply(null, result);
+      //     };
+      //   };
+      //   const apressBooks = [
+      //     {
+      //       id: 111,
+      //       title: "C# 6.0",
+      //       author: "ANDREN TROELSEN",
+      //       rating: [4.7],
+      //       reviews: [{ good: 4, excellent: 12 }],
+      //     },
+      //     {
+      //       id: 222,
+      //       title: "Efficient Learning Machines",
+      //       author: "Rahul Khanna",
+      //       rating: [4.5],
+      //       reviews: [],
+      //     },
+      //     {
+      //       id: 333,
+      //       title: "Pro AngularJS",
+      //       author: "Adam Freeman",
+      //       rating: [4.0],
+      //       reviews: [],
+      //     },
+      //     {
+      //       id: 444,
+      //       title: "Pro ASP.NET",
+      //       author: "Adam Freeman",
+      //       rating: [4.2],
+      //       reviews: [{ good: 14, excellent: 12 }],
+      //     },
+      //   ];
+
+      //   const filterOutStandingBooks = (book) => book.rating[0] === 5;
+
+      //   const fitlerGoodBooks = (book) => book.rating[0] > 4.5;
+
+      //   const filterBadBooks = (book) => book.rating[0] < 3.5;
+
+      //   const projectTitleAndAuthor = (book) => {
+      //     return { title: book.title, author: book.author };
+      //   };
+      //   const projectAuthor = (book) => {
+      //     return {
+      //       author: book.author,
+      //     };
+      //   };
+
+      //   const projectTitle = (book) => {
+      //     return {
+      //       title: book.title,
+      //     };
+      //   };
+
+      //   const queryGoodBooks = partial(
+      //     filter,
+      //     undefined,
+      //     (book) => book.rating[0] > 4.5
+      //   );
+      //   const mapTitleAndAuthor = partial(map, undefined, (book) => {
+      //     return { title: book.title, author: book.author };
+      //   });
+
+      //   const titleAndAuthorForGoodBooks = compose(
+      //     mapTitleAndAuthor,
+      //     queryGoodBooks
+      //   );
+
+      //   console.log(
+      //     "titleAndAuthorForGoodBooks-->",
+      //     titleAndAuthorForGoodBooks(apressBooks)
+      //   );
+
+      const composeN =
+        (...fns) =>
+        (value) => {
+          return fns.reverse().reduce((acc, fn) => {
+            const result = fn(acc);
+            console.log("acc->", result, acc);
+            return result;
+          }, value);
+        };
+      console.log(
+        composeN(
+          (item) => item > 5,
+          (item) => item + 1,
+          (item) => item + 1
+        )([1, 2, 3, 4, 5, 6, 7, 8, 9])
+      );
+    </script>
+  </body>
+</html>
