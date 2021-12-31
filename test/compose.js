@@ -59,7 +59,7 @@ const mapTitleAndAuthor = (book) => ({
   author: book.author,
 });
 
-const filterGoodBooks = (book) => book.rating[0] > 4.1;
+const filterGoodBooks = (book) => book.rating[0] > 4.5;
 
 const compose = (a, b) => (c) => a(b(c));
 
@@ -113,4 +113,22 @@ const curry = (fn) => {
 
 // const mapB = curry(mapA)
 
-console.log(compose(curry(mapA), curry(filterA))(apressBooks));
+const identity = (it) => {
+  console.log(it);
+  return it;
+};
+
+const composeN =
+  (...fns) =>
+  (value) =>
+    fns.reverse().reduce((pre, cur) => cur(pre), value);
+
+console.log(
+  composeN(
+    identity,
+    curry(mapA),
+    identity,
+    curry(filterA),
+    identity
+  )(apressBooks)
+);
